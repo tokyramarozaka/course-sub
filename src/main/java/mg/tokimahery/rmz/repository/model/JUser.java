@@ -18,7 +18,7 @@ import lombok.Setter;
 @Setter
 @Builder
 @Entity
-@Table(name = "user")
+@Table(name = "\"user\"")
 public class JUser {
   @Id @GeneratedValue private UUID id;
 
