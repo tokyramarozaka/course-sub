@@ -3,16 +3,20 @@ package mg.tokimahery.rmz.endpoint.event.model;
 import java.time.Duration;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Getter;
+import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.NoArgsConstructor;
 import lombok.ToString;
 import mg.tokimahery.rmz.model.Subscription;
 
+@NoArgsConstructor
 @AllArgsConstructor
-@Getter
-@Builder
+@Builder(toBuilder = true)
+@Data
+@EqualsAndHashCode(callSuper = false)
 @ToString
 public class SubscriptionCreated extends PojaEvent {
-  private final Subscription subscription;
+  private Subscription subscription;
 
   @Override
   public Duration maxConsumerDuration() {
