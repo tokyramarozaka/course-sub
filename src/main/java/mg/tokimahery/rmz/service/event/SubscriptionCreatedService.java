@@ -1,40 +1,40 @@
-package mg.tokimahery.rmz.service;
+package mg.tokimahery.rmz.service.event;
 
 import jakarta.mail.internet.AddressException;
 import jakarta.mail.internet.InternetAddress;
 import java.util.List;
 import java.util.UUID;
+import java.util.function.Consumer;
 import lombok.AllArgsConstructor;
-import mg.tokimahery.rmz.endpoint.event.EventProducer;
+import lombok.SneakyThrows;
 import mg.tokimahery.rmz.endpoint.event.model.SubscriptionCreated;
-import mg.tokimahery.rmz.endpoint.rest.controller.dto.SubscriptionRequest;
 import mg.tokimahery.rmz.mail.Email;
 import mg.tokimahery.rmz.mail.Mailer;
-import mg.tokimahery.rmz.mapper.SubscriptionMapper;
-import mg.tokimahery.rmz.model.Subscription;
-import mg.tokimahery.rmz.repository.SubscriptionRepository;
+import mg.tokimahery.rmz.service.CourseService;
+import mg.tokimahery.rmz.service.UserService;
 import org.springframework.stereotype.Service;
 
 @Service
 @AllArgsConstructor
-public class SubscriptionService {
+public class SubscriptionCreatedService implements Consumer<SubscriptionCreated> {
   private final Mailer mailer;
-  private final SubscriptionRepository repository;
-  private final SubscriptionMapper mapper;
   private final UserService userService;
-  private final EventProducer<SubscriptionCreated> eventProducer;
+  private final CourseService courseService;
 
-  public Subscription create(UUID id, SubscriptionRequest subscriptionRequest) {
-    var asEntity = mapper.toEntity(id, subscriptionRequest);
-    var saved = mapper.toModel(repository.save(asEntity));
-    eventProducer.accept(List.of(new SubscriptionCreated(saved)));
-    return saved;
+  @Override
+  @SneakyThrows
+  public void accept(SubscriptionCreated subscriptionCreated) {
+    sendCourseConfirmationEmailToUser(
+        subscriptionCreated.getSubscription().userId(),
+        subscriptionCreated.getSubscription().courseId());
   }
 
-  private void sendEmailToUserId(UUID userId) throws AddressException {
+  private void sendCourseConfirmationEmailToUser(UUID userId, UUID courseId)
+      throws AddressException {
     var user = userService.getById(userId);
+    var course = courseService.getById(courseId);
     var to = user.email();
-    var subject = "Subscription confirmation";
+    var subject = "Subscription confirmation(asynchronous): %s".formatted(course.title());
     var htmlBody =
         """
         <html>
