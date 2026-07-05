@@ -1,5 +1,8 @@
 package mg.tokimahery.rmz.mapper;
 
+import static mg.tokimahery.rmz.model.SubscriptionStatus.ACTIVE;
+
+import java.time.Instant;
 import java.util.List;
 import java.util.UUID;
 import lombok.AllArgsConstructor;
@@ -52,9 +55,9 @@ public class SubscriptionMapper {
     var user = userService.getById(subscriptionRequest.userId());
     var course = courseService.getById(courseId);
     return JSubscription.builder()
-        .id(subscriptionRequest.id())
-        .createdAt(subscriptionRequest.createdAt())
-        .status(subscriptionRequest.status())
+        .id(UUID.randomUUID())
+        .createdAt(Instant.now())
+        .status(ACTIVE)
         .user(userMapper.toEntity(user))
         .course(courseMapper.toEntity(course))
         .build();
